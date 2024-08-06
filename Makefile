@@ -33,3 +33,7 @@ migrate_up:
 # migrate_down: to run the migrations down command
 migrate_down:
 	migrate -path database/migrations -database "postgresql://root:password@localhost:5432/e-commerce?sslmode=disable" -verbose down
+
+# go_run: to run the go application from main
+go_run: 
+	clear && go run cmd/main.go

@@ -7,13 +7,14 @@ import (
 	httpSwagger "github.com/swaggo/http-swagger"
 
 	_ "github.com/aslam-ep/go-e-commerce/docs/swagger"
+	"github.com/aslam-ep/go-e-commerce/internal/address"
 	"github.com/aslam-ep/go-e-commerce/internal/auth"
 	"github.com/aslam-ep/go-e-commerce/internal/user"
 	"github.com/aslam-ep/go-e-commerce/router/middleware"
 	"github.com/aslam-ep/go-e-commerce/utils"
 )
 
-func SetupRoutes(r chi.Router, userHandler *user.UserHandler, authHandler *auth.AuthHandler) {
+func SetupRoutes(r chi.Router, userHandler *user.UserHandler, authHandler *auth.AuthHandler, addressHandler *address.AddressHandler) {
 	r.Route("/api/v1", func(r chi.Router) {
 		r.Get("/ping", func(w http.ResponseWriter, r *http.Request) {
 			utils.WriteResponse(w, http.StatusAccepted, &struct {
@@ -41,6 +42,18 @@ func SetupRoutes(r chi.Router, userHandler *user.UserHandler, authHandler *auth.
 				r.Put("/update", userHandler.UpdateUser)
 				r.Put("/reset-password", userHandler.ResetPassword)
 				r.Delete("/delete", userHandler.DeleteUser)
+
+				// Address Router group
+				r.Route("/addresses", func(r chi.Router) {
+					r.Get("/", addressHandler.GetAllAddress)
+					r.Post("/create", addressHandler.CreateAddress)
+					r.Route("/{address_id}", func(r chi.Router) {
+						r.Get("/", addressHandler.GetAddressByID)
+						r.Put("/update", addressHandler.UpdateAddress)
+						r.Put("/set-default", addressHandler.SetDefaultAddress)
+						r.Delete("/delete", addressHandler.DeleteAddress)
+					})
+				})
 			})
 		})
 	})

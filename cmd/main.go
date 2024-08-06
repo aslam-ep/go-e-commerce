@@ -6,6 +6,7 @@ import (
 
 	"github.com/aslam-ep/go-e-commerce/config"
 	"github.com/aslam-ep/go-e-commerce/database"
+	"github.com/aslam-ep/go-e-commerce/internal/address"
 	"github.com/aslam-ep/go-e-commerce/internal/auth"
 	"github.com/aslam-ep/go-e-commerce/internal/user"
 	"github.com/aslam-ep/go-e-commerce/router"
@@ -41,8 +42,13 @@ func main() {
 	authServ := auth.NewAuthService(userRepo, authRepo)
 	authHandler := auth.NewAuthHandler(authServ)
 
+	// Initilize address domain
+	addressRepo := address.NewAddressRepository(db)
+	addressServ := address.NewAddressService(addressRepo)
+	addressHandler := address.NewAddressHandler(addressServ)
+
 	// Setup routes
-	router.SetupRoutes(r, userHandler, authHandler)
+	router.SetupRoutes(r, userHandler, authHandler, addressHandler)
 
 	// Start the server
 	log.Println("Starting the server on :", config.AppConfig.ServerPort)
