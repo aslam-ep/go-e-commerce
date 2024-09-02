@@ -9,17 +9,19 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-type AddressHandler struct {
-	service AddressService
+// Handler handles HTTP requests related to user address.
+type Handler struct {
+	service Service
 }
 
-func NewAddressHandler(addressService AddressService) *AddressHandler {
-	return &AddressHandler{
-		service: addressService,
+// NewHandler creates a new instance of the Handler with the provided address service.
+func NewHandler(service Service) *Handler {
+	return &Handler{
+		service: service,
 	}
 }
 
-func (h *AddressHandler) getIDsFromParam(r *http.Request) (int, int, error) {
+func (h *Handler) getIDsFromParam(r *http.Request) (int, int, error) {
 	userIDStr := chi.URLParam(r, "id")
 	userID, err := strconv.Atoi(userIDStr)
 	if err != nil {
@@ -35,20 +37,21 @@ func (h *AddressHandler) getIDsFromParam(r *http.Request) (int, int, error) {
 	return addressID, userID, nil
 }
 
+// CreateAddress godoc
 // @Summary      Adding a new address
 // @Description  Adding a new address for the authenticated user
 // @Tags         Address
 // @Accept       json
 // @Produce      json
 // @Security     BearerAuth
-// @Param        body  body      AddressReq  true  "Address request for create and update"
+// @Param        body  body      CreateUpdateAddressRequest  true  "Address request for create and update"
 // @Success      200   {object}  Address
 // @Failure      400   {object}  utils.MessageRes
 // @Failure      401   {object}  utils.MessageRes
 // @Failure      500   {object}  utils.MessageRes
 // @Router       /users/{id}/addresses/create [post]
-func (h *AddressHandler) CreateAddress(w http.ResponseWriter, r *http.Request) {
-	var addressReq AddressReq
+func (h *Handler) CreateAddress(w http.ResponseWriter, r *http.Request) {
+	var addressReq CreateUpdateAddressRequest
 	if err := utils.ReadFromRequest(r, &addressReq); err != nil {
 		utils.WriterErrorResponse(w, http.StatusBadRequest, err.Error())
 		return
@@ -78,6 +81,7 @@ func (h *AddressHandler) CreateAddress(w http.ResponseWriter, r *http.Request) {
 	utils.WriteResponse(w, http.StatusOK, res)
 }
 
+// GetAllAddress godoc
 // @Summary      Get all addresses
 // @Description  Get all addresses for the authenticated user
 // @Tags         Address
@@ -90,7 +94,7 @@ func (h *AddressHandler) CreateAddress(w http.ResponseWriter, r *http.Request) {
 // @Failure      401   {object}  utils.MessageRes
 // @Failure      404  {object}  utils.MessageRes
 // @Router       /users/{id}/addresses/ [get]
-func (h *AddressHandler) GetAllAddress(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) GetAllAddress(w http.ResponseWriter, r *http.Request) {
 	userIDStr := chi.URLParam(r, "id")
 	userID, err := strconv.Atoi(userIDStr)
 	if err != nil {
@@ -107,6 +111,7 @@ func (h *AddressHandler) GetAllAddress(w http.ResponseWriter, r *http.Request) {
 	utils.WriteResponse(w, http.StatusOK, res)
 }
 
+// GetAddressByID godoc
 // @Summary      Get address by ID
 // @Description  Get a specific address by ID for the authenticated user
 // @Tags         Address
@@ -120,7 +125,7 @@ func (h *AddressHandler) GetAllAddress(w http.ResponseWriter, r *http.Request) {
 // @Failure      401  {object}  utils.MessageRes
 // @Failure      404  {object}  utils.MessageRes
 // @Router       /users/{id}/addresses/{adddress_id} [get]
-func (h *AddressHandler) GetAddressByID(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) GetAddressByID(w http.ResponseWriter, r *http.Request) {
 	addressID, userID, err := h.getIDsFromParam(r)
 	if err != nil {
 		utils.WriterErrorResponse(w, http.StatusBadRequest, err.Error())
@@ -136,6 +141,7 @@ func (h *AddressHandler) GetAddressByID(w http.ResponseWriter, r *http.Request) 
 	utils.WriteResponse(w, http.StatusOK, res)
 }
 
+// UpdateAddress godoc
 // @Summary      Updated address by ID
 // @Description  Updated address by ID for the current user
 // @Tags         Address
@@ -144,14 +150,14 @@ func (h *AddressHandler) GetAddressByID(w http.ResponseWriter, r *http.Request) 
 // @Security     BearerAuth
 // @Param        id             path   int  true  "User ID"
 // @Param        address_id     path   int  true  "Address ID"
-// @Param        body  body AddressReq true  "Address request for create and update"
+// @Param        body  body CreateUpdateAddressRequest true  "Address request for create and update"
 // @Success      200  {object}  Address
 // @Failure      400  {object}  utils.MessageRes
 // @Failure      401  {object}  utils.MessageRes
 // @Failure      500  {object}  utils.MessageRes
 // @Router       /users/{id}/addresses/{address_id}/update [put]
-func (h *AddressHandler) UpdateAddress(w http.ResponseWriter, r *http.Request) {
-	var addressReq AddressReq
+func (h *Handler) UpdateAddress(w http.ResponseWriter, r *http.Request) {
+	var addressReq CreateUpdateAddressRequest
 	if err := utils.ReadFromRequest(r, &addressReq); err != nil {
 		utils.WriterErrorResponse(w, http.StatusBadRequest, err.Error())
 		return
@@ -180,6 +186,7 @@ func (h *AddressHandler) UpdateAddress(w http.ResponseWriter, r *http.Request) {
 	utils.WriteResponse(w, http.StatusOK, res)
 }
 
+// SetDefaultAddress godoc
 // @Summary      Set default address
 // @Description  Set a specific address as the default for the authenticated user
 // @Tags         Address
@@ -193,7 +200,7 @@ func (h *AddressHandler) UpdateAddress(w http.ResponseWriter, r *http.Request) {
 // @Failure      401  {object}  utils.MessageRes
 // @Failure      404  {object}  utils.MessageRes
 // @Router       /users/{id}/addresses/{address_id}/set-default [put]
-func (h *AddressHandler) SetDefaultAddress(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) SetDefaultAddress(w http.ResponseWriter, r *http.Request) {
 	addressID, userID, err := h.getIDsFromParam(r)
 	if err != nil {
 		utils.WriterErrorResponse(w, http.StatusBadRequest, err.Error())
@@ -209,6 +216,7 @@ func (h *AddressHandler) SetDefaultAddress(w http.ResponseWriter, r *http.Reques
 	utils.WriteResponse(w, http.StatusOK, res)
 }
 
+// DeleteAddress godoc
 // @Summary      Delete address
 // @Description  Delete a specific address by ID for the authenticated user
 // @Tags         Address
@@ -222,7 +230,7 @@ func (h *AddressHandler) SetDefaultAddress(w http.ResponseWriter, r *http.Reques
 // @Failure      401  {object}  utils.MessageRes
 // @Failure      404  {object}  utils.MessageRes
 // @Router       /users/{id}/addresses/{address_id}/delete [delete]
-func (h *AddressHandler) DeleteAddress(w http.ResponseWriter, r *http.Request) {
+func (h *Handler) DeleteAddress(w http.ResponseWriter, r *http.Request) {
 	addressID, userID, err := h.getIDsFromParam(r)
 	if err != nil {
 		utils.WriterErrorResponse(w, http.StatusBadRequest, err.Error())
