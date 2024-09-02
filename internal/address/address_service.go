@@ -10,22 +10,35 @@ import (
 	"github.com/aslam-ep/go-e-commerce/utils"
 )
 
-type AddressService interface {
-	CreateAddress(c context.Context, req *AddressReq) (*Address, error)
-	GetAllAddress(c context.Context, userID int) (*AddressRes, error)
+// Service interface defines the methods required for address services.
+type Service interface {
+	// CreateAdddress Creates a new address based on the provided request and returns the created address details.
+	CreateAddress(c context.Context, req *CreateUpdateAddressRequest) (*Address, error)
+
+	// GetAllAddress Get all address based on the given userID and returns the AdderessRes
+	GetAllAddress(c context.Context, userID int) (*ListAddressRes, error)
+
+	// GetAddressByID Get a address by the address and user ID and return it
 	GetAddressByID(c context.Context, id int, userID int) (*Address, error)
-	UpdateAddress(c context.Context, req *AddressReq) (*Address, error)
+
+	// UpdateAddress Update the address based on user request and returns the updated address
+	UpdateAddress(c context.Context, req *CreateUpdateAddressRequest) (*Address, error)
+
+	// SetDefaultAddress Make the given address ID and return status
 	SetDefaultAddress(c context.Context, id int, userID int) (*utils.MessageRes, error)
+
+	// DeleteAddress Delete address based on given ID
 	DeleteAddress(c context.Context, id int, userID int) (*utils.MessageRes, error)
 }
 
 type addressService struct {
-	repository   AddressRepository
+	repository   Repository
 	timeout      time.Duration
 	addressLimit int
 }
 
-func NewAddressService(addressRepo AddressRepository) AddressService {
+// NewService creates a new instance of the address service.
+func NewService(addressRepo Repository) Service {
 	return &addressService{
 		repository:   addressRepo,
 		timeout:      time.Duration(config.AppConfig.DBTimeout) * time.Second,
@@ -33,7 +46,7 @@ func NewAddressService(addressRepo AddressRepository) AddressService {
 	}
 }
 
-func (s *addressService) CreateAddress(c context.Context, req *AddressReq) (*Address, error) {
+func (s *addressService) CreateAddress(c context.Context, req *CreateUpdateAddressRequest) (*Address, error) {
 	ctx, cancel := context.WithTimeout(c, s.timeout)
 	defer cancel()
 
@@ -64,7 +77,7 @@ func (s *addressService) CreateAddress(c context.Context, req *AddressReq) (*Add
 	return address, nil
 }
 
-func (s *addressService) GetAllAddress(c context.Context, userID int) (*AddressRes, error) {
+func (s *addressService) GetAllAddress(c context.Context, userID int) (*ListAddressRes, error) {
 	ctx, cancel := context.WithTimeout(c, s.timeout)
 	defer cancel()
 
@@ -73,7 +86,7 @@ func (s *addressService) GetAllAddress(c context.Context, userID int) (*AddressR
 		return nil, err
 	}
 
-	res := &AddressRes{
+	res := &ListAddressRes{
 		Count:     len(*addresses),
 		Addresses: addresses,
 	}
@@ -93,7 +106,7 @@ func (s *addressService) GetAddressByID(c context.Context, id int, userID int) (
 	return address, nil
 }
 
-func (s *addressService) UpdateAddress(c context.Context, req *AddressReq) (*Address, error) {
+func (s *addressService) UpdateAddress(c context.Context, req *CreateUpdateAddressRequest) (*Address, error) {
 	ctx, cancel := context.WithTimeout(c, s.timeout)
 	defer cancel()
 

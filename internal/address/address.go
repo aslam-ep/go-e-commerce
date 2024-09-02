@@ -2,6 +2,7 @@ package address
 
 import "time"
 
+// Address struct to hold the data structre for address details
 type Address struct {
 	ID           int64     `json:"id"`
 	UserID       int64     `json:"user_id"`
@@ -16,7 +17,8 @@ type Address struct {
 	UpdatedAt    time.Time `json:"updated_at"`
 }
 
-type AddressReq struct {
+// CreateUpdateAddressRequest represents the request payload for creating/updating address
+type CreateUpdateAddressRequest struct {
 	ID           int64  `json:"id,omitempty"`
 	UserID       int64  `json:"user_id,omitempty"`
 	AddressLine1 string `json:"address_line_1" validate:"required,min=5,max=250"`
@@ -27,7 +29,8 @@ type AddressReq struct {
 	Country      string `json:"country" validate:"required,min=3,max=100"`
 }
 
-type AddressRes struct {
+// ListAddressRes struct for returning set of addresses
+type ListAddressRes struct {
 	Count     int        `json:"count"`
 	Addresses *[]Address `json:"addresses"`
 }
